@@ -8,13 +8,15 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage[usenames,dvipsnames]{xcolor}
-\usepackage{tikz}
 \usepackage{listingsutf8}
 \usepackage{color}
-\usetikzlibrary{patterns}
-\usepackage{units}
+\usepackage{siunitx}
 \usepackage{nameref}
 \usepackage{caption}
+\usepackage{ccicons}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+\usepackage[european, EFvoltages, siunitx]{circuitikz}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 
 \title{Arduino-Grundkurs}
@@ -25,18 +27,30 @@
 {
 	language=c++,
 	keywordstyle=\color{NavyBlue},
-	numbers=left,
 	numberstyle=\small,
 	stringstyle=\color{OliveGreen},
 	commentstyle=\color{ForestGreen},
-	showstringspaces=false
+	showstringspaces=false,
+	basicstyle=\ttfamily,
+	numbers=none,
+	backgroundcolor=\color[gray]{0.97},
+	frame=single,
+	rulecolor=\color[gray]{0.75}
+}
+\lstdefinestyle{multiline}{
+	numbers=left,
+	backgroundcolor=\color{white},
+	frame=none
 }
 \renewcommand{\lstlistingname}{Codeblock}
 \DeclareCaptionFont{white}{\color{white}}
 \DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{.98\textwidth}{\hspace{15pt}#1#2#3}}}
 \captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+
 % Changing font so sans serif.
 \renewcommand{\familydefault}{\sfdefault}
+
+
 
 
 \begin{document}
@@ -51,26 +65,28 @@
 		\draw (0,0) -- (5,0);
 	\end{tikzpicture}
 	\\\medskip
-	Lizensiert als Creative Commons Attribution 4.0\\
-	https://creativecommons.org/licenses/by/4.0/legalcode
+	Lizenziert als Creative Commons Attribution-ShareAlike 4.0\\
+	\url{https://creativecommons.org/licenses/by-sa/4.0/legalcode}
 	\\\medskip
-	\includegraphics[width=0.75cm]{CC.png}
-	\includegraphics[width=0.75cm]{BY.png}
+	{\huge\ccbysa}
 \end{center}
 \vspace{0.3cm}
 \tableofcontents
 \vspace{1cm}
 
 
+
+
+
 \section{Einleitung}
 Arduino ist eine sogenannte "`Physical computing"'-Plattform, die auf einem einfachen Mikrocontroller und einer dazugehörigen \emph{IDE} (Integrated Development Environment) basiert. Damit können leicht Projekte umgesetzt werden, die mit ihrer Umwelt interagieren, Messungen vornehmen und Geräte steuern. Die folgenden Aufgaben sollen eine Einführung in die Programmierung dieser Plattform darstellen und beziehen sich auf den \emph{Arduino Uno}.
 \bigskip
 
-Als Programmiersprache kommt C/C++ zum Einsatz, welches um die Arduino-Bibliothek erweitert wurde. Alle darin enthaltenen Befehle können auf der Homepage arduino.cc unter Reference eingesehen werden. Auf der Website befinden sich außerdem zahlreiche Beispiele und Tutorials.
+Als Programmiersprache kommt C/C++ zum Einsatz, welches um die Arduino-Bibliothek erweitert wurde. Alle darin enthaltenen Befehle können auf der Homepage \href{https://www.arduino.cc/reference/de/}{arduino.cc} unter dem Menüpunkt "`Documentation > Reference"' eingesehen werden. Auf der Webseite befinden sich außerdem zahlreiche Beispiele und Tutorials.
 \bigskip
 
 Ein leeres Arduinoprojekt enthält mindestens zwei Funktionen:
-\begin{lstlisting}
+\begin{lstlisting}[style=multiline]
 void setup()
 {
 }
@@ -84,29 +100,26 @@ Diese werden von der Arduino-Bibliothek deklariert und müssen stets vorhanden s
 \emph{loop} wird daraufhin unablässig wiederholt.
 
 
+
+
+
 \clearpage
 \section{Digitaler Output}
-% Reconfiguring listing style
-\lstset
-{
-	numbers=none,
-	backgroundcolor=\color[gray]{0.85}
-}
+Der Arduino Uno besitzt 13 digitale Ein- bzw. Ausgänge. Digital heißt, dass diese nur zwischen zwei Zuständen unterscheiden können: HIGH oder LOW, bzw. null oder fünf Volt. Damit kann zum Beispiel eine LED ein- und ausgeschaltet werden.
 
-Der Arduino Uno besitzt 13 digitale Ein- bzw. Ausgänge. Digital heißt, dass diese nur zwischen zwei Zuständen unterscheiden können: \emph{HIGH} oder \emph{LOW}, bzw. null oder fünf Volt. Damit kann zum Beispiel eine LED ein- und ausgeschaltet werden.
-
-In den Arduino ist auf Port D13 bereits eine LED eingebaut, es kann aber genauso eine externe LED angeschlossen werden. Dabei muss jedoch unbedingt ein Vorwiderstand angeschlossen werden, um den Strom durch die LED auf circa \unit[20]{mA} zu begrenzen: Ansonsten löst diese oder der Arduino sich in magischen Rauch auf.
+In den Arduino ist auf Port D13 bereits eine LED eingebaut, es kann aber genauso eine externe LED angeschlossen werden. Dabei muss jedoch unbedingt ein Vorwiderstand verwendet werden, um den Strom durch die LED auf circa  \SI{20}{mA} zu begrenzen: Ansonsten löst diese oder der Arduino sich in magischen Rauch auf.
 \bigskip
 
 Zuerst muss in der Setupfunktion definiert werden, dass der betreffende Port als Output verwendet werden soll, also dass damit ein anderes Gerät mit Strom und Spannung versorgt werden soll. Dazu existiert die Funktion
 \begin{lstlisting}
 	void pinMode(int pin, int mode)
 \end{lstlisting}
+wobei \emph{mode} entweder OUTPUT oder INPUT sein kann.
 \bigskip
 
-Danach kann in der loop mit \emph{digitalWrite} der verwendete Pin auf HIGH gesetzt werden.
+Danach kann in der Loop mit \emph{digitalWrite} der verwendete Pin auf HIGH oder LOW gesetzt werden.
 \begin{lstlisting}
-	void digitalWrite(int pin, int mode)
+	void digitalWrite(int pin, int value)
 \end{lstlisting}
 \bigskip
 
@@ -117,38 +130,55 @@ Die Ausführung des Programms lässt sich mit mit zwei Funktionen unterbrechen:
 \end{lstlisting}
 \bigskip
 
-Weitere Informationen über die genannten Funktionen sind auf der offiziellen Webseite arduino.cc zu finden.
+Weitere Informationen über die genannten Funktionen sind auf der offiziellen Webseite \href{https://www.arduino.cc/reference/de/}{arduino.cc} zu finden.
 \begin{itemize}
 	\item Schreibe ein Programm, das eine LED für einige Sekunden einschaltet und danach einige Sekunden ausschaltet.
 \end{itemize}
 
 
+
+
+
 \section{Digitaler Input}
 \label{DigitalInput}
-Die digitalen Ports können auch als Input definiert werden. Dabei gelten Spannungen über \unit[3.3]{V} als HIGH, Spannungen darunter als LOW. Analog gibt es eine Funktion, die den Signalpegel für den gewünschten Pin überprüft:
+Die digitalen Ports können auch als Input verwendet werden. Dabei gelten Spannungen über \SI{3.3}{V} als HIGH, Spannungen darunter als LOW. Folgende Funktion kann den Zustand eines Pins überprüfen:
 \begin{lstlisting}
 	int digitalRead(int pin)
 \end{lstlisting}
-\bigskip
 
-Dabei wird man anfangs versucht sein, die Schaltung nach Abbildung \ref{NoPulldown} wie folgt aufzubauen:
 
-\begin{figure}[htbp!]
-\begin{minipage}{0.5\textwidth}
-	\includegraphics[width=\textwidth]{NoPulldown.png}
-	\caption{Schaltung ohne Pulldown-Widerstand}	
-	\label{NoPulldown}
+Dabei wird man anfangs versucht sein, die Schaltung nach Abbildung \ref{No-Pull-down} wie folgt aufzubauen:
+
+\begin{figure}[h!]
+\begin{minipage}{0.49\textwidth}
+	\centering
+	\begin{circuitikz}
+		\draw (0,2) node{} (0,-1) node{};
+		\draw (0,0) node[anchor=east]{5V}
+			to[normal open switch,o-,l=Schalter] (3,0) node[anchor=west]{Pin 12};
+	\end{circuitikz}
+	\caption{Schaltung ohne Pull-down-Widerstand}
+	\label{No-Pull-down}
 \end{minipage}
-\begin{minipage}{0.5\textwidth}
-	\includegraphics[width=\textwidth]{Pulldown.png}
-	\caption{Schaltung mit Pulldown-Widerstand}
-	\label{Pulldown}
+\begin{minipage}{0.49\textwidth}
+	\centering
+	\begin{circuitikz}
+		\draw (0,2) node{} (0,-1) node{};
+		\draw (0,0) node[anchor=east]{5V}
+			to[normal open switch,o-,l=Schalter] (3,0)
+			to[short, *-o] (3,1) node[anchor=south]{Pin 12};
+		\draw (3,0)
+			to[R, l=1<k\ohm>] (6,0)
+			to (6,-0.5) node[ground]{};
+	\end{circuitikz}
+	\caption{Schaltung mit Pull-down-Widerstand}
+	\label{Pull-down}
 \end{minipage}
 \end{figure}
 
-Solange der Schalter geschlossen ist, wird man auf Pin 12 HIGH messen. Wird dieser jedoch geöffnet, so liegt der Pin nicht mehr auf HIGH - aber auch nicht auf LOW. Das Potential ist an dieser Stelle undefiniert, der Eingang "`floatet"', nimmt störende Felder aus seiner Umgebung auf und misst so eine mehr oder weniger zufällige Spannung.
-Abhilfe schafft Schaltung \ref{Pulldown}. Ist der Schalter geschlossen, so fällt die gesamte Spannung an dem \emph{Pulldown-Widerstand} ab, am Eingang liegen wie zuvor \unit[5]{V}. Im geöffneten Zustand jedoch wird der Eingang über den Widerstand auf Massepotential gezogen, am Eingang wird LOW gemessen.
-Analog lassen sich auch \emph{Pullup-Widerstände} einsetzen.
+Solange der Schalter geschlossen ist, wird man auf Pin 12 HIGH messen. Wird dieser jedoch geöffnet, so liegt der Pin nicht mehr auf HIGH - aber auch nicht auf LOW. Das Potential ist an dieser Stelle undefiniert, der Eingang ist "`floating"', nimmt störende Felder aus seiner Umgebung auf und misst so eine mehr oder weniger zufällige Spannung.
+Abhilfe schafft Schaltung \ref{Pull-down}. Ist der Schalter geschlossen, so fällt die gesamte Spannung an dem \emph{Pull-down-Widerstand} ab, am Eingang liegen wie zuvor \SI{5}{V}. Im geöffneten Zustand jedoch wird der Eingang über den Widerstand auf Massepotential gezogen, an Pin 12 wird LOW gemessen.
+Analog lassen sich auch \emph{Pull-up-Widerstände} einsetzen.
 
 \begin{itemize}
 	\item Schreibe ein Programm, welches in jedem Durchgang der Hauptschleife überprüft, ob ein Schalter gedrückt ist und dementsprechend eine LED an- oder ausschaltet.
@@ -158,29 +188,26 @@ Analog lassen sich auch \emph{Pullup-Widerstände} einsetzen.
 \clearpage
 \section{Funktionen}
 \begin{itemize}
-	\item Schreibe eine Funktion vom Datentyp \emph{void}, welche einen Ton zufälliger Höhe auf einem Lautsprecher abspielt. Suche dafür in der Referenz auf arduino.cc geeignete Funktionen, um einen Ton zu erzeugen.
+	\item Schreibe eine Funktion vom Datentyp \emph{void}, welche einen Ton zufälliger Höhe auf einem Lautsprecher abspielt. Suche dafür in der Referenz auf \href{https://www.arduino.cc/reference/de/}{arduino.cc} geeignete Funktionen, um einen Ton zu erzeugen.
 \end{itemize}
 
 
 \section{Analoger Input}
-Der Mikrocontroller kann nicht nur zwischen HIGH und LOW unterscheiden, sondern über die analogen Inputs A1 bis A6 auch die genaue Größe einer Spannung ermitteln. Die Spannung zwischen \unit[0]{V} und \unit[5]{V} wird als 10-Bit-Ganzzahl dargestellt, also als Wert zwischen 0 und 1023.
+Der Mikrocontroller kann nicht nur zwischen HIGH und LOW unterscheiden, sondern über die analogen Inputs A1 bis A6 auch die genaue Größe einer Spannung ermitteln. Die Spannung zwischen \SI{0}{V} und \SI{5}{V} wird als 10-Bit-Ganzzahl dargestellt, also als Wert zwischen 0 und 1023.
 
 \begin{itemize}
-	\item Schließe ein Potentiometer zwischen \unit[0]{V} und \unit[5]{V} an und erstelle so eine variable Spannungsquelle.
+	\item Schließe ein Potentiometer zwischen \SI{0}{V} und \SI{5}{V} an und erstelle so eine variable Spannungsquelle.
 	\item Schließe fünf LEDs an, von denen je nach Spannung jeweils eine leuchten soll. Vorwiderstand nicht vergessen!
 \end{itemize}
 
 
+
+
+
 \section{Serielle Kommunikation}
 \subsection{Daten senden}
-Über die serielle Schnittstelle kann der Mikrocontroller mit dem angeschlossenen Computer oder anderen Geräten kommunizieren. Dazu muss in der Setup-Funktion die Kommunikation mit einer bestimmten Baudrate (Symbole pro Sekunde) gestartet werden. Die am PC ankommenden Daten können dann im "`Serial Monitor"' der Arduino-Umgebung eingesehen werden. Folgende Funktionen sind unter anderem wichtig:
+Über die serielle Schnittstelle kann der Mikrocontroller mit dem angeschlossenen Computer oder anderen Geräten kommunizieren. Dazu muss in der Setup-Funktion die Kommunikation mit einer bestimmten Baudrate (Übertragungsgeschwindigkeit/Symbole pro Sekunde) gestartet werden. Die am PC ankommenden Daten können dann im "`Serial Monitor"' der Arduino-Umgebung eingesehen werden. Folgende Funktionen sind unter anderem wichtig:
 
-% Reconfiguring listing style
-\lstset
-{
-	numbers=none,
-	backgroundcolor=\color[gray]{0.85}
-}
 \begin{lstlisting}
 	void Serial.begin(speed)
 \end{lstlisting}
@@ -191,17 +218,17 @@ und
 
 \begin{itemize}
 	\item Wandle das Programm aus der letzten Aufgabe so ab, dass die aktuell gemessene Spannung auf dem Computer angezeigt wird.
-	\item Falls du nicht weiter kommst, hilft dir die Website arduino.cc.
+	\item Falls du nicht weiter kommst, hilft dir die Website \href{https://www.arduino.cc/reference/de/language/functions/communication/serial/}{arduino.cc}.
 \end{itemize}
 
 \subsection{Daten empfangen}
 Es können nicht nur Daten gesendet werden - der Arduino kann auch Daten vom Computer empfangen. Dazu können die folgenden Funktionen verwendet werden:
 
 \begin{lstlisting}
-	int Serial.available(void)
+	int Serial.available()
 \end{lstlisting}
 \begin{lstlisting}
-	int Serial.read(void)
+	int Serial.read()
 \end{lstlisting}
 
 \begin{itemize}
@@ -209,30 +236,33 @@ Es können nicht nur Daten gesendet werden - der Arduino kann auch Daten vom Com
 \end{itemize}
 
 
+
+
+
 \clearpage
 \section{PWM-Output}
 Im Gegensatz zu anderen Mikrocontrollern besitzt der Arduino Uno keine Digital-Analog-Wandler (DAC), um Spannungen zwischen null und fünf Volt zu erzeugen. In vielen Fällen kommt als Ersatz jedoch die Verwendung eines \emph{PWM-Signals} in Frage. PWM steht für \emph{Pulse Width Modulation} - dabei wird ein Rechtecksignal fester Frequenz erzeugt, jedoch die Zeit variiert, die das Signal auf HIGH-Pegel liegt:
 
-\begin{figure}[htbp!]
-\begin{minipage}{0.5\textwidth}
+\begin{figure}[h!]
+\begin{minipage}{0.49\textwidth}
 	\begin{tikzpicture}
 		% Horizontal axis.
 		\draw[->] (0,0) -- (6.5,0) node[anchor=north] {Periode};
 		\draw	(0,0) node[anchor=north] {0}
 				(2,0) node[anchor=north] {1}
 				(4,0) node[anchor=north] {2};
-		
+
 		% Vertical axis.
 		\draw[->] (0,0) -- (0,4) node[anchor=east] {$U$};
 		\draw	(0,0) node[anchor=east] {0V}
 				(0,3) node[anchor=east] {5V};
-		
-		% PWM signal.						
+
+		% PWM signal.
 		\draw[pattern=north west lines, pattern color=CornflowerBlue]
-			(0,0) rectangle (0.5,3)				
+			(0,0) rectangle (0.5,3)
 			(2,0) rectangle (2.5,3)
 			(4,0) rectangle (4.5,3);
-			
+
 		\draw[thick]	(0,3) -- (0.5,3) -- (0.5,0) -- (2,0) -- (2,3)
 						(2,3) -- (2.5,3) -- (2.5,0) -- (4,0) -- (4,3)
 						(4,3) -- (4.5,3) -- (4.5,0);
@@ -240,25 +270,25 @@ Im Gegensatz zu anderen Mikrocontrollern besitzt der Arduino Uno keine Digital-A
 	\end{tikzpicture}
 	\caption{PWM-Signal mit 25\% Pulsweite}
 \end{minipage}
-\begin{minipage}{0.5\textwidth}
+\begin{minipage}{0.49\textwidth}
 	\begin{tikzpicture}
 		% Horizontal axis.
 		\draw[->] (0,0) -- (6.5,0) node[anchor=north] {Periode};
 		\draw	(0,0) node[anchor=north] {0}
 				(2,0) node[anchor=north] {1}
 				(4,0) node[anchor=north] {2};
-		
+
 		% Vertical axis.
 		\draw[->] (0,0) -- (0,4) node[anchor=east] {$U$};
 		\draw	(0,0) node[anchor=east] {0V}
 				(0,3) node[anchor=east] {5V};
-		
-		% PWM signal.					
+
+		% PWM signal.
 		\draw[pattern=north west lines, pattern color=CornflowerBlue]
-			(0,0) rectangle (1.5,3)				
+			(0,0) rectangle (1.5,3)
 			(2,0) rectangle (3.5,3)
 			(4,0) rectangle (5.5,3);
-			
+
 		\draw[thick]	(0,3) -- (1.5,3) -- (1.5,0) -- (2,0) -- (2,3)
 						(2,3) -- (3.5,3) -- (3.5,0) -- (4,0) -- (4,3)
 						(4,3) -- (5.5,3) -- (5.5,0);
@@ -269,59 +299,48 @@ Im Gegensatz zu anderen Mikrocontrollern besitzt der Arduino Uno keine Digital-A
 
 Das Verhältnis von Ein- und Ausschaltdauer der Impulse nennt man \emph{Pulsweite} oder \emph{Duty Cycle}. Über die Modulation dieser Pulsweite lässt sich zum Beispiel die Helligkeit einer LED oder die Geschwindigkeit eines Motors regeln: Da das menschliche Auge bzw. die Mechanik zu träge ist, um die einzelnen Pulse aufzulösen und voneinander zu trennen, ergibt sich effektiv eine mittlere Spannung zwischen null und fünf Volt.
 
-Alternativ ließe sich das Rechtecksignal mit einem großen Kondensator oder einer Induktivität glätten, die die Spannung puffern und die dahinter liegende Schaltung versorgen, solange das PWM-Signal LOW ist.
+Alternativ ließe sich das Rechtecksignal mit einem großen Kondensator oder einer Spule glätten, die die Spannung puffern und die dahinter liegende Schaltung versorgen, solange das PWM-Signal LOW ist.
 
 \bigskip
 Servomotoren interpretieren das PWM-Signal im Gegensatz zu normalen Gleichstrommotoren als Position und drehen sich je nach Pulsweite in die entsprechende Position.
 
-Nicht alle digitalen Pins eines Mikrocontrollers können ein PWM-Signal erzeugen. Bei einem Arduino Uno sind das zum Beispiel nur die Pins 3, 5, 6, 9, 10 und 11, das lässt sich auf der Website arduino.cc auh für andere Arduinomodelle nachschlagen. Diese Pins können verwendet werden, um die Funktion
+Nicht alle digitalen Pins eines Mikrocontrollers können ein PWM-Signal erzeugen. Bei einem Arduino Uno sind das zum Beispiel nur die Pins 3, 5, 6, 9, 10 und 11, das lässt sich auf der Website \href{https://www.arduino.cc/reference/de/language/functions/analog-io/analogwrite/}{arduino.cc} auch für andere Arduinomodelle nachschlagen. Diese Pins können verwendet werden, um die Funktion
 
 \begin{lstlisting}
 	void analogWrite(pin, value)
 \end{lstlisting}
 
 aufzurufen. \textit{value} ist dabei die Pulsweite, angegeben als Zahl zwischen 0 (immer aus) und 255 (immer an). Um \textit{analogWrite} verwenden zu können, muss der Pin übrigens nicht mit \textit{pinMode} als Ausgang definiert werden.
-
-
 \begin{itemize}
-	\item Baue eine Schaltung aus einer LED mit Vorwiderstand an einem PWM-fähigen Pin.
-	\item Schreibe eine Funktion, die als Parameter einen Pin und die gewünschte Helligkeit annimmt und die LED via \textit{analogWrite} anschaltet.
+	\item Baue eine Schaltung aus einer LED und einem Vorwiderstand an einem PWM-fähigen Pin.
+	\item Schreibe eine Funktion, die als Parameter einen Pin und die gewünschte Helligkeit in Prozent annimmt und die LED via \textit{analogWrite} anschaltet.
 \end{itemize}
 
 
-\section{Interrupts}
-% Reconfiguring listing style
-\lstset
-{
-	numbers=none,
-	backgroundcolor=\color[gray]{0.85}
-}
 
+
+
+\section{Interrupts}
 Die dimmbare LED aus der vorherigen Aufgabe soll nun via Knopfdruck durch einen \emph{Interrupt} gesteuert werden. Interrupts sind hardwaremäßig in den Mikrocontroller eingebaut und können auf äußere Umstände reagieren. Sie können den aktuell ausgeführten Code unterbrechen ("`Interrupt"') und anstatt dessen "`zwischendurch"' eine andere Funktion auslösen. Welche Funktion das ist und unter welcher Bedingung der Interrupt ausgelöst wird, kann mit der Methode
 
 \begin{lstlisting}
-	void attachInterrupt(int interrupt, void (*function) (void), int mode)
+	void attachInterrupt(int interrupt, void (*function)(void), int mode)
 \end{lstlisting}
 
-festgelegt werden. Mit ihr kann eine Funktion sozusagen "`An einen Interrupt angeheftet"' werden. \emph{mode} kann dabei \emph{RISING}, \emph{FALLING}, \emph{CHANGE} oder \emph{LOW} sein und bestimmt, wann der Interrupt ausgelöst wird. RISING bedeutet in diesem Fall zum Beispiel, dass der Interrupt immer dann ausgelöst wird, wenn die Spannung am dazugehörigen Pin von LOW auf HIGH springt.
-
-Von diesen Interruptpins verfügt der Arduino Uno über zwei Stück, welche von null an aufwärts nummeriert werden und den digitalen Pins zwei und drei entsprechen. Um diese beiden Nummerierungsarten verständlich und unabhängig vom verwendeten Microcontroller ineinander zu überführen, existiert die Funktion
+festgelegt werden. Mit ihr kann eine Funktion sozusagen "`An einen Interrupt angeheftet"' werden.
+Der Arduino Uno verfügt über zwei interruptfähige Pins, welche von null an aufwärts nummeriert werden und den digitalen Pins zwei und drei entsprechen. Um diese beiden Nummerierungsarten verständlich und unabhängig vom verwendeten Mikrocontroller ineinander zu übersetzen, existiert die Funktion
 
 \begin{lstlisting}
 	int digitalPinToInterrupt(int pin)
 \end{lstlisting}
-Auf einem Arduino Uno wird durch diese Funktion also zum Beispiel zwei zu null und drei zu eins.
+Auf einem Arduino Uno wird durch diese Funktion also zum Beispiel zwei zu null und drei zu eins.\\
+
+Der zweite Parameter der attachInterrupt-Funktion ist dabei einfach der Name der Funktion, die durch den Interrupt ausgeführt werden soll.
+
+\emph{mode} kann \emph{RISING}, \emph{FALLING}, \emph{CHANGE} oder \emph{LOW} sein und bestimmt, wann der Interrupt ausgelöst wird. RISING bedeutet in diesem Fall zum Beispiel, dass der Interrupt immer dann ausgelöst wird, wenn die Spannung am dazugehörigen Pin von LOW auf HIGH springt.
 \bigskip
 
-
-\clearpage
-% Reconfiguring listing style
-\lstset
-{
-	numbers=left,
-	backgroundcolor=\color{white}
-}
-\begin{lstlisting}[caption=Ausschnitt aus dem Programmcode einer Messbox des Windkraftwerks, label=Drehzahlmessung] 
+\begin{lstlisting}[caption=Ausschnitt aus dem Programmcode einer Messbox des Windkraftwerks, label=Drehzahlmessung, style=multiline]
 volatile int rounds = 0;
 const int rpmPin = 3;
 
@@ -340,28 +359,21 @@ void count()
 \end{lstlisting}
 \vspace{0.5cm}
 
-Interrupts werden zum Beispiel bei der Drehzahlmessung des drachenbasierten fliegenden Windkraftwerks verwendet, das in Jahren 2014 bis 2016 am Aerospace Lab Herrenberg entwickelt wurde. Ein Auszug der dort verwendeten Software ist in Codeblock \ref{Drehzahlmessung} dargestellt. In Zeile sechs wird der interne Pullup-Widerstand von Pin drei aktiviert, der Pin liegt also im Normalfall über $\unit[20]{k\Omega}$ auf \unit[5]{V} und ist mit der Lichtschranke verbunden. Wird die Lichtschranke jedoch nicht mehr blockiert, schaltet der darin befindliche Fototransistor durch und zieht Pin drei auf Nullpotential.
+Interrupts werden zum Beispiel bei der Drehzahlmessung des drachenbasierten fliegenden Windkraftwerks verwendet, das in Jahren 2014 bis 2016 am \href{https://aerospace-lab.de/aerospace-lab-gewinnt-dlr-schuelerwettbewerb/}{Aerospace Lab Herrenberg} entwickelt wurde. Ein Auszug der dort verwendeten Software ist in Codeblock \ref{Drehzahlmessung} dargestellt. In Zeile sechs wird der interne Pull-up-Widerstand von Pin drei aktiviert, der Pin liegt also im Normalfall über $\SI{20}{\kilo\ohm}$ auf \SI{5}{V} und ist mit der Lichtschranke verbunden. Wird die Lichtschranke jedoch nicht mehr blockiert, schaltet der darin befindliche Fototransistor durch und zieht Pin drei auf Nullpotential.
 
-Da die Spannung von \unit[5]{V} auf \unit[0]{V} \emph{abfällt} (FALLING), wird die Funktion \emph{count} ausgelöst und die Variable \emph{rounds} inkrementiert - wie in Zeile sieben definiert.
+Da die Spannung von \SI{5}{V} auf \SI{0}{V} \emph{abfällt} (FALLING), wird die Funktion \emph{count} ausgelöst und die Variable \emph{rounds} inkrementiert - wie in Zeile sieben definiert.
 
 \begin{itemize}
-	\item Ergänze die Schaltung aus der vorherigen Aufgabe um einen Schalter an einem der Interruptpins. Der Schalter kann den Pin bei Aktivierung zum Beispiel mit \unit[5]{V} verbinden. Vergiss in diesem Fall nicht einen Pull-Down-Widerstand wie in Aufgabe \ref{DigitalInput} (\nameref{DigitalInput}) zu verbauen, sodass bei deaktiviertem Schalter auch tatsächlich \unit[0]{V} an dem Interrupt anliegen.
+	\item Ergänze die Schaltung aus der vorherigen Aufgabe um einen Schalter an einem der Interruptpins. Der Schalter kann den Pin bei Aktivierung zum Beispiel mit \SI{5}{V} verbinden. Vergiss in diesem Fall nicht einen Pull-Down-Widerstand wie in Aufgabe \ref{DigitalInput} zu verbauen, sodass bei deaktiviertem Schalter auch tatsächlich \SI{0}{V} an dem Interruptpin anliegen.
 	\item Schreibe eine Funktion \textit{step}, die die LED mit jedem Knopfdruck etwas heller stellt. Du kannst dabei auf die Funktionen aus der vorherigen Aufgabe zugreifen.
 	\item Wenn die LED mit maximaler Helligkeit leuchtet, soll der nächste Aufruf der Funktion \textit{step} sie wieder ausschalten.
 \end{itemize}
 
 
 
-%
-% Sources
-%
+
+
 \bigskip
-\section*{Quellen}
-
-\begin{itemize}
-	\item http://www.arduino.cc/en/Reference/attachInterrupt, 9. April 2016
-	\item http://timogruss.de/2013/07/die-timer-des-atmega128-pwm-modus-1, 9. April 2016
-	\item https://www.arduino.cc/en/Reference/AnalogWrite, 25. November 2016
-\end{itemize}
-
+\section*{Verbesserungsvorschläge?}
+Gerne dürft ihr Fehler und Verbesserungsvorschläge auf \url{https://github.com/Jeinzi/Arduino-Grundkurs} melden - dort findet ihr auch die aktuellen \LaTeX-Quelldateien und einen Link auf diese PDF :)
 \end{document}
